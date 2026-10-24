@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { ArrowRight, Sparkles, Palette } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
 import TiltCard from './TiltCard';
 import KineticHeading from './KineticHeading';
 import BorderBeam from './BorderBeam';
 
-const FigmaLogo = ({ size = 40 }) => (
+const FigmaLogo = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M19 28.5C19 33.7467 14.7467 38 9.5 38C4.25329 38 0 33.7467 0 28.5C0 23.2533 4.25329 19 9.5 19H19V28.5Z" fill="#0ACF83"/>
     <path d="M0 19C0 13.7533 4.25329 9.5 9.5 9.5H19V28.5H9.5C4.25329 28.5 0 24.2467 0 19Z" fill="#A259FF"/>
@@ -16,42 +16,79 @@ const FigmaLogo = ({ size = 40 }) => (
   </svg>
 );
 
-const CanvaLogo = ({ size = 40 }) => (
+const CanvaLogo = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-9H8v2h8v-2z" fill="#00C4CC"/>
   </svg>
 );
 
-const AdobeXDLogo = ({ size = 40 }) => (
+const AdobeXDLogo = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="24" height="24" rx="6" fill="#470137"/>
     <path d="M6 7l3 5-3 5h2.5l1.5-3 1.5 3H14l-3-5 3-5h-2.5l-1.5 3-1.5-3H6zm8 0v10h2.5c2.5 0 4.5-2 4.5-5s-2-5-4.5-5H14zm2 2h.5c1.5 0 2.5 1 2.5 3s-1 2-2.5 3H16V9z" fill="#FF61F6"/>
   </svg>
 );
 
-const AdobeIllustratorLogo = ({ size = 40 }) => (
+const AdobeIllustratorLogo = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="24" height="24" rx="6" fill="#330000"/>
     <text x="12" y="17" fill="#FF9A00" fontSize="13" fontWeight="bold" fontFamily="Inter, sans-serif" textAnchor="middle">Ai</text>
   </svg>
 );
 
+interface ToolItem {
+  id: string;
+  name: string;
+  role: string;
+  color: string;
+  glow: string;
+  icon: React.ReactNode;
+  specialty: string;
+}
+
+const toolsList: ToolItem[] = [
+  {
+    id: 'figma',
+    name: 'Figma',
+    role: 'Primary Design Tool',
+    color: '#A259FF',
+    glow: 'rgba(162, 89, 255, 0.15)',
+    icon: <FigmaLogo size={32} />,
+    specialty: 'Component Systems & High-Fidelity Wireframes'
+  },
+  {
+    id: 'canva',
+    name: 'Canva',
+    role: 'Visual Content',
+    color: '#00C4CC',
+    glow: 'rgba(0, 196, 204, 0.15)',
+    icon: <CanvaLogo size={32} />,
+    specialty: 'Presentation Decks & Brand Merchandising'
+  },
+  {
+    id: 'xd',
+    name: 'Adobe XD',
+    role: 'Prototyping',
+    color: '#FF61F6',
+    glow: 'rgba(255, 97, 246, 0.15)',
+    icon: <AdobeXDLogo size={32} />,
+    specialty: 'Interactive Micro-Interactions & User Flows'
+  },
+  {
+    id: 'illustrator',
+    name: 'Illustrator',
+    role: 'Vector Graphics',
+    color: '#FF9A00',
+    glow: 'rgba(255, 154, 0, 0.15)',
+    icon: <AdobeIllustratorLogo size={32} />,
+    specialty: 'Custom Scalable Vector Icons & Brand Badges'
+  }
+];
+
 export default function CreativeTools() {
   const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add('in');
-        });
-      },
-      { threshold: 0.1 }
-    );
-    const els = sectionRef.current?.querySelectorAll('.reveal');
-    els?.forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const [activeTool, setActiveTool] = useState<string | null>(null);
 
   const handleScrollToProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -62,104 +99,312 @@ export default function CreativeTools() {
   };
 
   return (
-    <section id="creative-tools" ref={sectionRef} style={{ padding: '90px 48px', backgroundColor: 'transparent' }}>
-      <div className="max-w" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <section 
+      id="creative-tools" 
+      ref={sectionRef} 
+      style={{ 
+        padding: '110px 48px', 
+        backgroundColor: 'transparent',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Background Ambient Glow */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '500px',
+          height: '500px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(162, 89, 255, 0.04) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+      />
+
+      <div className="max-w" style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
         
-        {/* SECTION INTRO */}
-        <div className="reveal" style={{ marginBottom: '70px', textAlign: 'center' }}>
-          <div className="font-head" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--gray-mid)', marginBottom: '16px' }}>
-            04 / DESIGN · EXPERIENCE · CREATIVITY
+        {/* Section Intro */}
+        <motion.div 
+          initial={{ opacity: 0, y: 24 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          style={{ marginBottom: '64px', textAlign: 'center' }}
+        >
+          <div 
+            className="font-head" 
+            style={{ 
+              fontSize: '11px', 
+              fontWeight: 700, 
+              letterSpacing: '0.18em', 
+              color: 'var(--gray-mid)', 
+              marginBottom: '16px',
+              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Palette size={14} />
+            <span>04 / Design Experience &amp; Aesthetics</span>
           </div>
+
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <KineticHeading className="font-hero" style={{ fontSize: 'clamp(40px, 6vw, 80px)', letterSpacing: '0.02em', lineHeight: 1, color: 'var(--black)', marginBottom: '32px', textAlign: 'center' }}>
-              UI/UX & CREATIVE DESIGN
+            <KineticHeading 
+              className="font-hero" 
+              style={{ 
+                fontSize: 'clamp(42px, 5.5vw, 76px)', 
+                letterSpacing: '0.02em', 
+                lineHeight: 1.05, 
+                color: 'var(--black)', 
+                marginBottom: '20px', 
+                textAlign: 'center' 
+              }}
+            >
+              UI/UX &amp; CREATIVE SUITE
             </KineticHeading>
           </div>
-          <p className="font-body" style={{ fontSize: 'clamp(20px, 3vw, 24px)', color: 'var(--gray-text)', lineHeight: 1.4, margin: '0 auto', maxWidth: '600px' }}>
-            Designing clean, intuitive and visually engaging digital experiences.
+
+          <p 
+            className="font-body" 
+            style={{ 
+              fontSize: 'clamp(17px, 2.2vw, 21px)', 
+              color: 'var(--gray-text)', 
+              lineHeight: 1.5, 
+              margin: '0 auto', 
+              maxWidth: '640px' 
+            }}
+          >
+            Crafting fluid, human-centric design systems where aesthetics and functional clarity reinforce each other.
           </p>
-        </div>
+        </motion.div>
 
-        {/* DESIGN TOOLKIT */}
-        <div className="reveal" style={{ marginBottom: '60px' }}>
-          <div className="font-head" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--black)', marginBottom: '8px', textAlign: 'center' }}>
-            MY DESIGN TOOLKIT
+        {/* 4 Interactive Brand Tool Cards */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          style={{ marginBottom: '72px' }}
+        >
+          <div 
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+              gap: '24px' 
+            }}
+          >
+            {toolsList.map((tool) => {
+              const isHovered = activeTool === tool.id;
+
+              return (
+                <TiltCard key={tool.id} dataCursor={tool.name} maxTilt={8}>
+                  <motion.div 
+                    className="tool-interactive-card"
+                    onMouseEnter={() => setActiveTool(tool.id)}
+                    onMouseLeave={() => setActiveTool(null)}
+                    whileHover={{ y: -6 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      padding: '28px 24px',
+                      borderRadius: '18px',
+                      border: isHovered ? `1.5px solid ${tool.color}` : '1.5px solid var(--border)',
+                      backgroundColor: '#FFFFFF',
+                      boxShadow: isHovered ? `0 16px 36px ${tool.glow}` : '0 6px 20px rgba(0,0,0,0.03)',
+                      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      minHeight: '180px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                        <div style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.3s ease' }}>
+                          {tool.icon}
+                        </div>
+
+                        <span 
+                          className="font-head" 
+                          style={{ 
+                            fontSize: '9px', 
+                            fontWeight: 700, 
+                            letterSpacing: '0.12em', 
+                            textTransform: 'uppercase',
+                            padding: '4px 10px',
+                            borderRadius: '100px',
+                            backgroundColor: '#FAFAF8',
+                            border: '1px solid var(--border)',
+                            color: 'var(--gray-text)'
+                          }}
+                        >
+                          {tool.role}
+                        </span>
+                      </div>
+
+                      <h4 
+                        className="font-hero" 
+                        style={{ 
+                          fontSize: '24px', 
+                          letterSpacing: '0.02em', 
+                          color: 'var(--black)',
+                          marginBottom: '6px'
+                        }}
+                      >
+                        {tool.name}
+                      </h4>
+                    </div>
+
+                    <div 
+                      className="font-body" 
+                      style={{ 
+                        fontSize: '12px', 
+                        color: 'var(--gray-text)', 
+                        lineHeight: 1.5,
+                        paddingTop: '12px',
+                        borderTop: '1px solid var(--border)'
+                      }}
+                    >
+                      {tool.specialty}
+                    </div>
+                  </motion.div>
+                </TiltCard>
+              );
+            })}
           </div>
-          <p className="font-body" style={{ fontSize: '14px', color: 'var(--gray-text)', marginBottom: '48px', textAlign: 'center' }}>
-            Tools I use to design, create and present digital experiences.
-          </p>
+        </motion.div>
 
-          <div className="toolkit-grid">
-            <TiltCard dataCursor="FIGMA" maxTilt={10}>
-              <motion.div className="tool-box" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <FigmaLogo size={24} />
-                <span className="font-head">Figma</span>
-              </motion.div>
-            </TiltCard>
-
-            <TiltCard dataCursor="CANVA" maxTilt={10}>
-              <motion.div className="tool-box" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <CanvaLogo size={24} />
-                <span className="font-head">Canva</span>
-              </motion.div>
-            </TiltCard>
-
-            <TiltCard dataCursor="ADOBE XD" maxTilt={10}>
-              <motion.div className="tool-box" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <AdobeXDLogo size={24} />
-                <span className="font-head">Adobe XD</span>
-              </motion.div>
-            </TiltCard>
-
-            <TiltCard dataCursor="ILLUSTRATOR" maxTilt={10}>
-              <motion.div className="tool-box" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <AdobeIllustratorLogo size={24} />
-                <span className="font-head">Adobe Illustrator</span>
-              </motion.div>
-            </TiltCard>
-          </div>
-        </div>
-
-        {/* FEATURED UI/UX PROJECT */}
-        <div className="reveal" style={{ marginBottom: '70px' }}>
+        {/* Featured UI/UX Project Showcase Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          style={{ marginBottom: '32px' }}
+        >
           <TiltCard dataCursor="VIEW PROJECT" maxTilt={4}>
             <motion.a 
               href="#projects" 
               onClick={handleScrollToProject} 
-              className="featured-project-card"
-              style={{ position: 'relative', overflow: 'hidden' }}
+              className="featured-project-card group"
+              style={{ 
+                position: 'relative', 
+                overflow: 'hidden',
+                display: 'grid',
+                gridTemplateColumns: '1.2fr 1fr',
+                gap: '56px',
+                alignItems: 'center',
+                padding: '48px',
+                borderRadius: '24px',
+                border: '1.5px solid var(--border)',
+                backgroundColor: '#FFFFFF',
+                boxShadow: '0 16px 48px rgba(0,0,0,0.05)',
+                textDecoration: 'none',
+                color: 'inherit',
+                transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
+              }}
               whileTap={{ scale: 0.98 }}
             >
-              <BorderBeam size={200} duration={8} borderWidth={1.5} />
+              <BorderBeam size={220} duration={8} borderWidth={1.5} />
+              
               <div className="featured-content">
-                <div className="font-head featured-label">FEATURED UI/UX PROJECT</div>
-                <h3 className="font-hero featured-title">UI/UX Based Food Delivery Website</h3>
-                <p className="font-body featured-desc">
-                  A user-friendly food delivery website designed with a focus on intuitive navigation, clear visual hierarchy and a smooth ordering experience.
-                </p>
-                
-                <div className="featured-meta">
-                  <span className="font-head">MARCH 2026</span>
-                  <span className="font-head">REMOTE</span>
-                  <span className="font-head featured-tool">FIGMA</span>
-                </div>
-                
-                <div className="project-tags">
-                  <span className="font-head tag">UI/UX</span>
-                  <span className="font-head tag">FIGMA</span>
-                  <span className="font-head tag">WEB DESIGN</span>
+                <div 
+                  className="font-head" 
+                  style={{ 
+                    fontSize: '11px', 
+                    fontWeight: 700, 
+                    letterSpacing: '0.18em', 
+                    color: 'var(--gray-mid)', 
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Sparkles size={13} color="#111111" />
+                  <span>FLAGSHIP UI/UX ARCHITECTURE</span>
                 </div>
 
-                <div className="featured-cta font-head">
-                  Explore Project <ArrowRight size={16} className="featured-arrow" />
+                <h3 
+                  className="font-hero" 
+                  style={{ 
+                    fontSize: 'clamp(32px, 4vw, 48px)', 
+                    letterSpacing: '0.02em', 
+                    lineHeight: 1.08, 
+                    color: 'var(--black)', 
+                    marginBottom: '16px' 
+                  }}
+                >
+                  UI/UX Based Food Delivery Platform
+                </h3>
+                
+                <p 
+                  className="font-body" 
+                  style={{ 
+                    fontSize: '15px', 
+                    color: 'var(--gray-text)', 
+                    lineHeight: 1.65, 
+                    marginBottom: '28px',
+                    maxWidth: '520px'
+                  }}
+                >
+                  A complete user-centered food delivery platform interface designed in Figma and developed into responsive web components, engineered for frictionless ordering, intuitive restaurant browsing, and rapid discovery.
+                </p>
+                
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
+                  {['FIGMA', 'UI/UX SYSTEM', 'RESPONSIVE WEB', 'USER FLOWS'].map(tag => (
+                    <span 
+                      key={tag}
+                      className="font-head"
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        padding: '6px 14px',
+                        backgroundColor: '#FAFAF8',
+                        border: '1px solid var(--border)',
+                        borderRadius: '100px',
+                        color: 'var(--black)'
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div 
+                  className="font-head" 
+                  style={{ 
+                    fontSize: '12px', 
+                    fontWeight: 700, 
+                    letterSpacing: '0.15em', 
+                    textTransform: 'uppercase', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    color: 'var(--black)'
+                  }}
+                >
+                  <span>Explore In Full Gallery</span>
+                  <ArrowRight size={16} className="featured-arrow" />
                 </div>
               </div>
               
               <div className="featured-preview">
-                <div className="preview-image-wrap" style={{ overflow: 'hidden', borderRadius: '8px' }}>
+                <div 
+                  style={{ 
+                    overflow: 'hidden', 
+                    borderRadius: '16px',
+                    border: '1.5px solid var(--border)',
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.06)'
+                  }}
+                >
                   <img 
                     src="/projects/food-delivery-realistic.webp" 
-                    alt="Food Delivery UI" 
+                    alt="Food Delivery UI Showcase" 
                     style={{
                       transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)',
                       width: '100%',
@@ -176,117 +421,14 @@ export default function CreativeTools() {
               </div>
             </motion.a>
           </TiltCard>
-        </div>
+        </motion.div>
 
       </div>
 
       <style>{`
-        /* Toolkit Grid */
-        .toolkit-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 16px;
-          justify-content: center;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-        
-        .tool-box {
-          background-color: #F8F8F6;
-          border-radius: 12px;
-          padding: 16px 26px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          transition: all 0.3s ease;
-          border: 1px solid var(--border);
-          cursor: pointer;
-        }
-        
-        .tool-box:hover {
-          background-color: var(--white);
-          border-color: var(--black);
-          box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-        }
-        
-        .tool-box span {
-          font-size: 15px;
-          font-weight: 600;
-          color: var(--black);
-        }
-
-        /* Featured Project */
-        .featured-project-card {
-          display: flex;
-          align-items: center;
-          gap: 64px;
-          background-color: var(--white);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 56px;
-          text-decoration: none;
-          color: inherit;
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
         .featured-project-card:hover {
-          border-color: var(--black);
-          box-shadow: 0 24px 60px rgba(0,0,0,0.08);
-        }
-        .featured-content {
-          flex: 1;
-        }
-        .featured-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.2em;
-          color: var(--gray-mid);
-          margin-bottom: 24px;
-        }
-        .featured-title {
-          font-size: clamp(32px, 4vw, 48px);
-          line-height: 1.1;
-          color: var(--black);
-          margin-bottom: 24px;
-        }
-        .featured-desc {
-          font-size: 16px;
-          color: var(--gray-text);
-          line-height: 1.6;
-          margin-bottom: 32px;
-        }
-        .featured-meta {
-          display: flex;
-          gap: 24px;
-          margin-bottom: 24px;
-        }
-        .featured-meta span {
-          font-size: 10px;
-          letter-spacing: 0.15em;
-          color: var(--gray-mid);
-        }
-        .project-tags {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 32px;
-        }
-        .tag {
-          font-size: 10px;
-          letter-spacing: 0.1em;
-          padding: 6px 14px;
-          background-color: #FAFAF8;
-          border: 1px solid var(--border);
-          border-radius: 100px;
-          color: var(--black);
-        }
-        .featured-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: var(--black);
+          border-color: var(--black) !important;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.08) !important;
         }
         .featured-arrow {
           transition: transform 0.3s ease;
@@ -294,17 +436,15 @@ export default function CreativeTools() {
         .featured-project-card:hover .featured-arrow {
           transform: translateX(6px);
         }
-        .featured-preview {
-          flex: 1;
-        }
-        @media (max-width: 900px) {
+        @media (max-width: 960px) {
           .featured-project-card {
-            flex-direction: column;
-            padding: 32px;
-            gap: 40px;
+            grid-template-columns: 1fr !important;
+            gap: 36px !important;
+            padding: 32px !important;
           }
         }
       `}</style>
     </section>
   );
 }
+

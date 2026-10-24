@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { projects } from '../data/portfolioData';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import Magnetic from './Magnetic';
 import KineticHeading from './KineticHeading';
 import TextScramble from './TextScramble';
@@ -167,37 +167,82 @@ function ProjectImageCard({ image, title, isEager }: { image: string; title: str
 
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add('in');
-        });
-      },
-      { threshold: 0.1 }
-    );
-    const els = sectionRef.current?.querySelectorAll('.reveal');
-    els?.forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
 
   return (
-    <section id="projects" ref={sectionRef} style={{ backgroundColor: 'transparent', padding: '90px 0', position: 'relative' }}>
-      
-      <div className="max-w reveal" style={{ padding: '0 48px', marginBottom: '80px' }}>
-        <div className="section-label">04 / Projects</div>
-        <KineticHeading className="font-hero" style={{ fontSize: 'clamp(40px, 6vw, 80px)', letterSpacing: '0.02em', lineHeight: 1, color: 'var(--black)', marginTop: '8px' }}>
-          FEATURED PROJECTS
-        </KineticHeading>
+    <section 
+      id="projects" 
+      ref={sectionRef} 
+      style={{ 
+        backgroundColor: 'transparent', 
+        padding: '110px 0', 
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Background Ambient Glow */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '25%',
+          left: '5%',
+          width: '450px',
+          height: '450px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0, 0, 0, 0.025) 0%, transparent 70%)',
+          filter: 'blur(70px)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+      />
+
+      <div className="max-w" style={{ padding: '0 48px', marginBottom: '80px', position: 'relative', zIndex: 1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div 
+            className="font-head" 
+            style={{ 
+              fontSize: '11px', 
+              fontWeight: 700, 
+              letterSpacing: '0.18em', 
+              color: 'var(--gray-mid)', 
+              textTransform: 'uppercase',
+              marginBottom: '16px'
+            }}
+          >
+            04 / Selected Works · Systems · Design
+          </div>
+          <KineticHeading 
+            className="font-hero" 
+            style={{ 
+              fontSize: 'clamp(42px, 6vw, 84px)', 
+              letterSpacing: '0.02em', 
+              lineHeight: 1, 
+              color: 'var(--black)' 
+            }}
+          >
+            FEATURED PROJECTS
+          </KineticHeading>
+        </motion.div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '140px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '140px', position: 'relative', zIndex: 1 }}>
         {projects.map((proj, i) => {
           const isImageLeft = i % 2 !== 0;
 
           return (
-            <div key={proj.id} className="project-block reveal" style={{ backgroundColor: 'transparent', padding: '0 48px', border: 'none' }}>
+            <motion.div 
+              key={proj.id} 
+              className="project-block" 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              style={{ backgroundColor: 'transparent', padding: '0 48px', border: 'none' }}
+            >
               <div className="max-w" style={{ 
                 display: 'flex', 
                 flexDirection: isImageLeft ? 'row-reverse' : 'row',
@@ -209,46 +254,73 @@ export default function Projects() {
                 
                 {/* Text Info */}
                 <div style={{ flex: '1 1 500px', maxWidth: '600px', display: 'flex', flexDirection: 'column' }}>
-                  <div className="font-head proj-num" style={{ fontSize: '11px', fontWeight: 700, marginBottom: '20px', letterSpacing: '0.18em' }}>
-                    PROJECT {proj.number}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span 
+                      className="font-head" 
+                      style={{ 
+                        fontSize: '11px', 
+                        fontWeight: 700, 
+                        letterSpacing: '0.18em',
+                        color: 'var(--gray-mid)'
+                      }}
+                    >
+                      PROJECT {proj.number}
+                    </span>
+                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--border)' }} />
+                    <span 
+                      className="font-head"
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        padding: '3px 10px',
+                        borderRadius: '100px',
+                        backgroundColor: '#F5F5F3',
+                        color: 'var(--black)'
+                      }}
+                    >
+                      {proj.category}
+                    </span>
                   </div>
                   
                   <motion.h3 
                     className="font-hero proj-title" 
                     whileHover={{ x: 6 }}
-                    style={{ fontSize: 'clamp(40px, 5vw, 64px)', letterSpacing: '0.02em', lineHeight: 0.95, marginBottom: '24px', cursor: 'default' }}
+                    style={{ fontSize: 'clamp(38px, 4.8vw, 60px)', letterSpacing: '0.02em', lineHeight: 1.02, marginBottom: '20px', cursor: 'default' }}
                   >
                     <TextScramble triggerOnHover duration={500}>
                       {proj.title}
                     </TextScramble>
                   </motion.h3>
                   
-                  <div className="font-head" style={{ fontSize: '10px', fontWeight: 700, color: 'var(--gray-text)', marginBottom: '28px', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                  <div className="font-head" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gray-text)', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
                     {proj.date}
                   </div>
                   
-                  <p className="font-body" style={{ fontSize: '15px', lineHeight: 1.8, color: 'var(--gray-text)', marginBottom: '36px' }}>
+                  <p className="font-body" style={{ fontSize: '15px', lineHeight: 1.8, color: 'var(--gray-text)', marginBottom: '32px' }}>
                     {proj.description}
                   </p>
                   
-                  <div style={{ marginBottom: '40px' }}>
-                    <div className="font-head" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gray-mid)', marginBottom: '14px' }}>
-                      TECHNOLOGIES
+                  <div style={{ marginBottom: '36px' }}>
+                    <div className="font-head" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gray-mid)', marginBottom: '12px' }}>
+                      ENGINEERED WITH
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {proj.technologies.map(tech => (
                         <motion.span 
                           key={tech} 
-                          whileHover={{ scale: 1.08, y: -2 }}
+                          whileHover={{ scale: 1.06, y: -2 }}
                           className="font-head" 
                           style={{ 
                             fontSize: '11px', 
-                            letterSpacing: '0.06em', 
+                            letterSpacing: '0.05em', 
                             color: 'var(--black)',
                             border: '1px solid var(--border)',
                             borderRadius: '100px',
-                            padding: '4px 12px',
-                            backgroundColor: '#FAFAF8',
+                            padding: '5px 14px',
+                            backgroundColor: '#FFFFFF',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
                             cursor: 'default'
                           }}
                         >
@@ -264,8 +336,8 @@ export default function Projects() {
                         href={proj.github} 
                         target="_blank" 
                         rel="noreferrer" 
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
                         style={{ 
                           display: 'inline-flex', 
                           alignItems: 'center', 
@@ -274,13 +346,13 @@ export default function Projects() {
                           textDecoration: 'none', 
                           border: '1.5px solid var(--black)',
                           borderRadius: '100px',
-                          padding: '12px 26px',
+                          padding: '14px 28px',
                           backgroundColor: 'var(--white)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.04)'
+                          boxShadow: '0 4px 18px rgba(0,0,0,0.06)'
                         }}
                       >
-                        <span className="font-head" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                          VIEW REPOSITORY
+                        <span className="font-head" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                          EXPLORE REPOSITORY
                         </span>
                         <ArrowRight size={16} strokeWidth={2} className="proj-arrow" />
                       </motion.a>
@@ -290,15 +362,15 @@ export default function Projects() {
 
                 {/* 3D Interactive Project Image */}
                 <div className="proj-img-wrap" style={{ 
-                  flex: '1 1 400px', 
-                  maxWidth: '480px', 
+                  flex: '1 1 420px', 
+                  maxWidth: '520px', 
                   width: '100%' 
                 }}>
                   <ProjectImageCard image={proj.image} title={proj.title} isEager={i === 0} />
                 </div>
 
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -322,3 +394,4 @@ export default function Projects() {
     </section>
   );
 }
+
